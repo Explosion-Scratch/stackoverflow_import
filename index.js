@@ -6,6 +6,7 @@ const prettier = require("prettier");
 app.set("json spaces", 2);
 
 app.get("/:question", async (req, res) => {
+  return res.json({});
   let q = req.params.question.trim().toLowerCase().replace(/_/g, " ");
   const searchResults = await fetch(
     `https://api.stackexchange.com/2.3/search?${new URLSearchParams({
@@ -23,7 +24,17 @@ app.get("/:question", async (req, res) => {
   }
   res.json(await getAnswer(searchResults.items));
 });
-
+google("test").then(console.log);
+async function google(q) {
+  let text = await fetch(
+    `https://google.com/search?q=${encodeURIComponent(q)}`
+  ).then((r) => r.text());
+  const $ = cheerio.load(text);
+  return $.root()
+    .find('a[href^="/url"]')
+    .toArray()
+    .map((i) => i.attribs.href.split("q=")[1].split("&sa=")[0]);
+}
 async function getAnswer(searchResults) {
   for (let index in searchResults) {
     console.log("Searching index %o", index);
